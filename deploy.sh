@@ -1,6 +1,6 @@
 gradle clean
 
-gradle buildDependents
+gradle buildDependents -x test
 
 cd authorization-service
 
