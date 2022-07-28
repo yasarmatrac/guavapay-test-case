@@ -1,0 +1,27 @@
+server:
+  port: 8081
+
+
+application:
+  springdoc:
+    url: http://127.0.0.1:8080
+    service-url: http://127.0.0.1:8080/delivery
+    security:
+      authorization-url: http://127.0.0.1:9000/oauth2/authorize
+      token-url: http://127.0.0.1:9000/oauth2/token
+  client:
+    courier:
+      base-url: http://127.0.0.1:8083
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://127.0.0.1:9000
+
+  datasource:
+    url: jdbc:h2:file:./db/delivery
+    driverClassName: org.h2.Driver
+    username: sa
+    password: sa

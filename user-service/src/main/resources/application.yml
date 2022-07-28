@@ -1,0 +1,63 @@
+server:
+  port: 8082
+
+
+application:
+  springdoc:
+    url: http://127.0.0.1:8080
+    service-url: http://127.0.0.1:8080/user
+    security:
+      authorization-url: http://127.0.0.1:9000/oauth2/authorize
+      token-url: http://127.0.0.1:9000/oauth2/token
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://127.0.0.1:9000
+
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5442/testcase_db
+    username: postgres
+    password: pass
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: rabbit_user
+    password: 12341234
+
+  cloud:
+    function:
+      definition: courierUserCreateEventFunction
+    stream:
+      default:
+        binder: rabbit
+        contentType: application/json
+      bindings:
+        courierUserCreateEventFunction-out-0:
+          destination: courierUserCreateResponseEvent
+          producer:
+            requiredGroups: courierUserCreateResponseEventGroup
+
+        courierUserCreateEventFunction-in-0:
+          destination: courierUserCreateEvent
+          group: courierUserCreateEventGroup
+          consumer:
+            maxAttempts: 3
+            backOffInitialInterval: 500
+            backOffMaxInterval: 1000
+            backOffMultiplier: 2.0
+
+
+logging:
+  level:
+    root: info
+    org.springframework.web: trace
+    org.springframework.security: trace
+    org.springframework.security.oauth2: trace

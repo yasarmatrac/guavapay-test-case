@@ -1,0 +1,141 @@
+version: "3.8"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit_user
+      - RABBITMQ_DEFAULT_PASS=12341234
+    ports:
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+    networks:
+      - testcase-network
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5442:5432"
+    expose:
+      - "5442"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "pass"
+      POSTGRES_DB: "testcase_db"
+    networks:
+      - testcase-network
+
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: testcase/api-gateway-1.0:latest
+    environment:
+      - server_port=8080
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    networks:
+      - testcase-network
+
+  authorization-service:
+    container_name: authorization-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: testcase/authorization-service-1.0:latest
+    ports:
+      - "9000:9000"
+    expose:
+      - "9000"
+    environment:
+      - server_port=9000
+      - spring_datasource_url=jdbc:postgresql://postgres:5432/testcase_db
+      - spring_datasource_username=postgres
+      - spring_datasource_password=pass
+      - application_springdoc_url=http://127.0.0.1:8080
+    restart: on-failure
+    networks:
+      - testcase-network
+
+  delivery-service:
+    container_name: delivery-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: testcase/delivery-service-1.0:latest
+    environment:
+      - server_port=8080
+      - spring_datasource_url=jdbc:postgresql://postgres:5432/testcase_db
+      - spring_datasource_username=postgres
+      - spring_datasource_password=pass
+      - spring_rabbitmq_host=rabbitmq
+      - spring_rabbitmq_port=5672
+      - spring_rabbitmq_username=rabbit_user
+      - spring_rabbitmq_password=12341234
+      - spring_security_oauth2_resourceserver_jwt_issuer-uri=http://authorization-service:9000
+      - application_client_courier_base-url=http://courier-service:8080
+      - application_springdoc_url=http://127.0.0.1:8080
+      - application_springdoc_security_authorization-url=http://127.0.0.1:9000/oauth2/authorize
+      - application_springdoc_security_token-url=http://127.0.0.1:9000/oauth2/token
+      - application_springdoc_service-url=http://127.0.0.1:8080/delivery
+    restart: on-failure
+    networks:
+      - testcase-network
+
+
+  courier-service:
+    container_name: courier-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: testcase/courier-service-1.0:latest
+    environment:
+      - server_port=8080
+      - spring_datasource_url=jdbc:postgresql://postgres:5432/testcase_db
+      - spring_datasource_username=postgres
+      - spring_datasource_password=pass
+      - spring_rabbitmq_host=rabbitmq
+      - spring_rabbitmq_port=5672
+      - spring_rabbitmq_username=rabbit_user
+      - spring_rabbitmq_password=12341234
+      - spring_security_oauth2_resourceserver_jwt_issuer-uri=http://authorization-service:9000
+      - application_springdoc_url=http://127.0.0.1:8080
+      - application_springdoc_security_authorization-url=http://127.0.0.1:9000/oauth2/authorize
+      - application_springdoc_security_token-url=http://127.0.0.1:9000/oauth2/token
+      - application_springdoc_service-url=http://127.0.0.1:8080/courier
+    restart: on-failure
+    networks:
+      - testcase-network
+
+
+  user-service:
+    container_name: user-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: testcase/user-service-1.0:latest
+    environment:
+      - server_port=8080
+      - spring_datasource_url=jdbc:postgresql://postgres:5432/testcase_db
+      - spring_datasource_username=postgres
+      - spring_datasource_password=pass
+      - spring_rabbitmq_host=rabbitmq
+      - spring_rabbitmq_port=5672
+      - spring_rabbitmq_username=rabbit_user
+      - spring_rabbitmq_password=12341234
+      - spring_security_oauth2_resourceserver_jwt_issuer-uri=http://authorization-service:9000
+      - application_springdoc_url=http://127.0.0.1:8080
+      - application_springdoc_security_authorization-url=http://127.0.0.1:9000/oauth2/authorize
+      - application_springdoc_security_token-url=http://127.0.0.1:9000/oauth2/token
+      - application_springdoc_service-url=http://127.0.0.1:8080/user
+    restart: on-failure
+    networks:
+      - testcase-network
+
+networks:
+  testcase-network:
+    driver: bridge

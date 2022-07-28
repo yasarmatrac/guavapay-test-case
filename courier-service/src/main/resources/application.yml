@@ -1,0 +1,80 @@
+server:
+  port: 8083
+
+application:
+  springdoc:
+    url: http://127.0.0.1:8080
+    service-url: http://127.0.0.1:8080/courier
+    security:
+      authorization-url: http://127.0.0.1:9000/oauth2/authorize
+      token-url: http://127.0.0.1:9000/oauth2/token
+
+
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://127.0.0.1:9000
+
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5442/testcase_db
+    username: postgres
+    password: pass
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: rabbit_user
+    password: 12341234
+
+  cloud:
+    function:
+      definition: deliveryCourierAssignmentEventFunction;deliveryUpdatesConsumer;courierUserCreateResponseEventConsumer
+    stream:
+      default:
+        binder: rabbit
+        contentType: application/json
+      bindings:
+        deliveryCourierAssignmentEventFunction-out-0:
+          destination: deliveryAssignmentResponseEvent
+          producer:
+            requiredGroups: deliveryAssignmentResponseEventGroup
+
+        deliveryCourierAssignmentEventFunction-in-0:
+          destination: deliveryAssignmentEvent
+          group: deliveryAssignmentEventGroup
+          consumer:
+            maxAttempts: 3
+            backOffInitialInterval: 500
+            backOffMaxInterval: 1000
+            backOffMultiplier: 2.0
+
+        courierUserCreateEventFunction-out-0:
+          destination: courierUserCreateEvent
+          producer:
+            requiredGroups: courierUserCreateEventGroup
+
+        courierUserCreateResponseEventConsumer-in-0:
+          destination: courierUserCreateResponseEvent
+          group: courierUserCreateResponseEventGroup
+          consumer:
+            maxAttempts: 3
+            backOffInitialInterval: 500
+            backOffMaxInterval: 1000
+            backOffMultiplier: 2.0
+
+        deliveryUpdatesConsumer-in-0:
+          destination: deliveryUpdateEvent
+          group: deliveryUpdateEventGroup
+          consumer:
+            maxAttempts: 3
+            backOffInitialInterval: 500
+            backOffMaxInterval: 1000
+            backOffMultiplier: 2.0
+

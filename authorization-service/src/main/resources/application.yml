@@ -1,0 +1,23 @@
+server:
+  port: 9000
+
+application:
+  springdoc:
+    url: http://127.0.0.1:8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5442/testcase_db
+    username: postgres
+    password: pass
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+logging:
+  level:
+    root: info
+    org.springframework.web: trace
+    org.springframework.security: trace
+    org.springframework.security.oauth2: trace
