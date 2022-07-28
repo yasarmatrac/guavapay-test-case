@@ -1,7 +1,7 @@
 # Guavapay Test Case
 
 In the test case, I used Java11, Gradle, new Spring-Authorization-Server, Spring Cloud Stream, QueryDSL etc.  
-Swagger presented in project and grouped by microservices. But, at the same time I prepared postman collection because it is more usual in my opinion.
+Swagger presented in project and grouped by microservices.(http://127.0.0.1:8080/swagger-ui.html) But, at the same time I prepared postman collection because it is more usual in my opinion.
 This test case consists of 3 microservices, auth-service , gateway, postgesdb and rabbitmq message broker.
 For distributed transactions, I used event sourcing and saga pattern. 
 
@@ -29,7 +29,7 @@ As any user role Get Deliveries is an endpoint for listing all deliveries that t
 
 As a ADMIN, Get Couriers is an endpoint for listing all couriers that the system has.
 
-As a COURIER DMIN, The start transport endpoint ensures to start transportation only for the user which is a courier.
+As a COURIER, The start transport endpoint ensures to start transportation only for the user which is a courier.
 
 As a COURIER, The Add Track endpoint ensures to add the location info of the delivery.
 
